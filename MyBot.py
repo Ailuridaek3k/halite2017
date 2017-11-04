@@ -37,7 +37,7 @@ while True:
             continue
 
         # For the planets in the game
-        for planet in sorted(game_map.all_planets(), key=lambda planet: (ship, planet, ship_targets, dock_attempts)):
+        for planet in sorted(game_map.all_planets(), key=lambda planet: planetquality(ship, planet, ship_targets, dock_attempts)):
             # Planet owned?
             if (planet.is_owned() and planet.owner == ship.owner) or planet in dock_attempts:
                 continue
