@@ -10,11 +10,11 @@ logging.info("This match will get red hot!")
 #TODO: Make it so ships dont crash into each other
 
 # calculates how dangerous the planet is
-def planetquality(ship, planet):
+def planetquality(ship, planet, ship_targets, dock_attempts):
     count_in_targets = len([target for target in ship_targets.values() if target == planet])
     return (
         10*int(planet.is_owned())
-        + 800 * int(planet in dock_attempts)
+        + 1000 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
         + 200*count_in_targets
         + ship.calculate_distance_between(planet)
