@@ -52,17 +52,15 @@ while True:
                 command_queue.append(ship.dock(planet))
             else:
                 # If we can't dock
-                '''                
+
                 target_object = planet
                 if planet.is_owned() and planet.owner != ship.owner:
                     # attack the docked ships
                     target_object = planet.all_docked_ships()[0]
-                '''
-
 
                 #ship_targets[ship] = target_object
                 navigate_command = ship.navigate(
-                    ship.closest_point_to(planet),
+                    ship.closest_point_to(target_object),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
                     ignore_ships=True)
