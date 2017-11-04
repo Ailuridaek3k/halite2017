@@ -5,20 +5,27 @@ import logging
 # communication with game engine
 game = hlt.Game("Apt3ryx")
 # start message
-logging.info("This match will get red hot!")
+logging.info("Joining the game")
 
 #TODO: Make it so ships dont crash into each other
 
 # calculates how dangerous the planet is
 def planetquality(ship, planet, ship_targets, dock_attempts):
     count_in_targets = len([target for target in ship_targets.values() if target == planet])
-    return (
+    message = "The dock attempts in planetquality are" + str(dock_attempts)
+    logging.info(message)
+    pqual = (
         10*int(planet.is_owned())
         + 1000 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
         + 200*count_in_targets
         + ship.calculate_distance_between(planet)
         - 1*planet.radius)
+
+    message2 = "The planetquality score for" + str(planet) + "is" + str(pqual)
+    logging.info(message2)
+
+    return pqual
 
 while True:
     # turn start
