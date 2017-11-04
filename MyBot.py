@@ -14,6 +14,7 @@ def planetquality(ship, planet):
     count_in_targets = len([target for target in ship_targets.values() if target == planet])
     return (
         10*int(planet.is_owned())
+        + 800 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
         + 200*count_in_targets
         + ship.calculate_distance_between(planet)
@@ -46,7 +47,7 @@ while True:
                     ship.can_dock(planet) and
                     # don't try to dock on a planet someone else owns
                     not (planet.is_owned() and planet.owner != ship.owner) and
-                    not planet in dock_attempts): #TODO: dont make ships conflict each other
+                    not planet in dock_attempts):
                 # We add the command by appending it to the command_queue
                 dock_attempts[planet] = ship
                 command_queue.append(ship.dock(planet))
