@@ -3,7 +3,7 @@ import hlt
 import logging
 
 # communication with game engine
-game = hlt.Game("Apt3ryx")
+game = hlt.Game("Csinensis")
 # start message
 logging.info("Joining the game")
 
@@ -15,12 +15,13 @@ def planetquality(ship, planet, ship_targets, dock_attempts):
     message = "The dock attempts in planetquality are" + str(dock_attempts)
     logging.info(message)
     pqual = (
-        10*int(planet.is_owned())
+        -20*int(planet.is_owned() and planet.owner == ship.owner and not planet.is_full())
         + 1000 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
         + 200*count_in_targets
         + ship.calculate_distance_between(planet)
-        - 1*planet.radius)
+        # bigger owned planets by other people are less attractive
+        - 2*(0.5 - int(planet.is_owned() and planet.owner != ship.owner))*planet.radius)
 
     message2 = "The planetquality score for" + str(planet) + "is" + str(pqual)
     logging.info(message2)
@@ -43,8 +44,13 @@ while True:
             # Skip ship
             continue
 
+        #logging
+        sortedplanets = sorted(game_map.all_planets(), key=lambda planet: planetquality(ship, planet, ship_targets, dock_attempts))
+        messagesort = "The order of planets for" + str(ship) + "is" + str(sortedplanets)
+        logging.info(messagesort)
+
         # For the planets in the game
-        for planet in sorted(game_map.all_planets(), key=lambda planet: planetquality(ship, planet, ship_targets, dock_attempts)):
+        for planet in sortedplanets:
             # Planet owned?
             if (planet.is_owned() and planet.owner == ship.owner) or planet in dock_attempts:
                 continue
@@ -66,12 +72,12 @@ while True:
                     # attack the docked ships
                     target_object = planet.all_docked_ships()[0]
 
-                #ship_targets[ship] = target_object
+                ship_targets[ship] = target_object
                 navigate_command = ship.navigate(
                     ship.closest_point_to(target_object),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
-                    ignore_ships=True)
+                    ignore_ships=False)
                 # movement
                 if navigate_command:
                     command_queue.append(navigate_command)

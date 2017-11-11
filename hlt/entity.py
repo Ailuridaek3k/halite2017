@@ -1,6 +1,7 @@
 import logging
 import abc
 import math
+import random
 from enum import Enum
 from . import constants
 
@@ -300,8 +301,11 @@ class Ship(Entity):
             else Planet if (ignore_planets and not ignore_ships) \
             else Entity
         if avoid_obstacles and game_map.obstacles_between(self, target, ignore):
-            new_target_dx = math.cos(math.radians(angle + angular_step)) * distance
-            new_target_dy = math.sin(math.radians(angle + angular_step)) * distance
+            avoidAngle = math.radians(angle + angular_step)
+            dodgeRange = 0.1
+            #adding a random number so that the ships don't come up with the same number and crash
+            new_target_dx = (math.cos(avoidAngle) + random.uniform(-dodgeRange,dodgeRange)) * distance
+            new_target_dy = (math.sin(avoidAngle) + random.uniform(-dodgeRange,dodgeRange)) * distance
             new_target = Position(self.x + new_target_dx, self.y + new_target_dy)
             return self.navigate(new_target, game_map, speed, True, max_corrections - 1, angular_step)
         speed = speed if (distance >= speed) else distance
