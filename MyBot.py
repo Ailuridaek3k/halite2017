@@ -1,6 +1,8 @@
 # imports
 import hlt
 import logging
+import math
+import random
 
 # communication with game engine
 game = hlt.Game("Csinensis")
@@ -27,6 +29,16 @@ def planetquality(ship, planet, ship_targets, dock_attempts):
     logging.info(message2)
 
     return pqual
+
+'''
+def monotonicDeflection(seed=0, deflection_range=math.pi / 4):
+    deflection = seed
+    while True:
+        deflection += random.uniform(0, deflection_range)
+        yield deflection
+
+        deflections = monotonicDeflection()
+'''
 
 while True:
     # turn start
