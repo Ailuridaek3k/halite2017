@@ -14,31 +14,24 @@ logging.info("Joining the game")
 # calculates how dangerous the planet is
 def planetquality(ship, planet, ship_targets, dock_attempts):
     count_in_targets = len([target for target in ship_targets.values() if target == planet])
-    message = "The dock attempts in planetquality are" + str(dock_attempts)
-    logging.info(message)
+    dist = ship.calculate_distance_between(planet)
+    #message = "The dock attempts in planetquality are" + str(dock_attempts)
+    #logging.info(message)
     pqual = (
-        -20*int(planet.is_owned() and planet.owner == ship.owner and not planet.is_full())
-        + 1000 * int(planet in dock_attempts)
+        -50*int(planet.is_owned() and planet.owner == ship.owner and not planet.is_full())
+        + 2000*int(planet.is_full() and planet.owner == ship.owner)
+        # + 1000 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
-        + 200*count_in_targets
-        + ship.calculate_distance_between(planet)
+        + 200 * count_in_targets
+        + dist
+        - 50 * int(dist < 10)
         # bigger owned planets by other people are less attractive
         - 2*(0.5 - int(planet.is_owned() and planet.owner != ship.owner))*planet.radius)
 
-    message2 = "The planetquality score for" + str(planet) + "is" + str(pqual)
-    logging.info(message2)
+    #message2 = "The planetquality score for" + str(planet) + "is" + str(pqual)
+    #logging.info(message2)
 
     return pqual
-
-'''
-def monotonicDeflection(seed=0, deflection_range=math.pi / 4):
-    deflection = seed
-    while True:
-        deflection += random.uniform(0, deflection_range)
-        yield deflection
-
-        deflections = monotonicDeflection()
-'''
 
 while True:
     # turn start
@@ -56,23 +49,20 @@ while True:
             # Skip ship
             continue
 
-        #logging
         sortedplanets = sorted(game_map.all_planets(), key=lambda planet: planetquality(ship, planet, ship_targets, dock_attempts))
-        messagesort = "The order of planets for" + str(ship) + "is" + str(sortedplanets)
-        logging.info(messagesort)
+        #messagesort = "The order of planets for" + str(ship) + "is" + str(sortedplanets)
+        #logging.info(messagesort)
 
         # For the planets in the game
         for planet in sortedplanets:
             # Planet owned?
-            if (planet.is_owned() and planet.owner == ship.owner) or planet in dock_attempts:
-                continue
 
             # If we can dock
             if (
                     ship.can_dock(planet) and
                     # don't try to dock on a planet someone else owns
                     not (planet.is_owned() and planet.owner != ship.owner) and
-                    not planet in dock_attempts):
+                    not (planet.is_owned() and planet.owner == ship.owner and planet.is_full())):
                 # We add the command by appending it to the command_queue
                 dock_attempts[planet] = ship
                 command_queue.append(ship.dock(planet))

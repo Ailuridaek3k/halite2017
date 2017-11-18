@@ -271,7 +271,7 @@ class Ship(Entity):
         return "u {}".format(self.id)
 
     def navigate(self, target, game_map, speed, avoid_obstacles=True, max_corrections=90, angular_step=1,
-                 ignore_ships=False, ignore_planets=False, avoidAngle=None):
+                 ignore_ships=False, ignore_planets=False, avoid=None):
         """
         Move a ship to a specific target position (Entity). It is recommended to place the position
         itself here, else navigate will crash into the target. If avoid_obstacles is set to True (default)
@@ -305,7 +305,7 @@ class Ship(Entity):
             avoidAngle = math.radians(angle + angular_step) + random.uniform(0,dodgeRange)
             #adding a random number so that the ships don't come up with the same number and crash
             avoidAngle = math.radians(angle + angular_step) + (
-                next(avoidAngle) if avoidAngle else 0)
+                next(avoid) if avoid else 0)
             new_target_dx = math.cos(avoidAngle) * distance
             new_target_dy = math.sin(avoidAngle) * distance
             new_target = Position(self.x + new_target_dx, self.y + new_target_dy)
