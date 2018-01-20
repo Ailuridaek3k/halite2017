@@ -9,14 +9,12 @@ game = hlt.Game("Csinensis")
 # start message
 logging.info("Joining the game")
 
-#TODO: Make it so ships dont crash into each other
+SHIPTHRESHOLD = 8
 
 # calculates how dangerous the planet is
 def planetquality(ship, planet, ship_targets, dock_attempts):
     count_in_targets = len([target for target in ship_targets.values() if target == planet])
     dist = ship.calculate_distance_between(planet)
-    #message = "The dock attempts in planetquality are" + str(dock_attempts)
-    #logging.info(message)
     pqual = (
         -50*int(planet.is_owned() and planet.owner == ship.owner and not planet.is_full())
         + 2000*int(planet.is_full() and planet.owner == ship.owner)
@@ -26,11 +24,33 @@ def planetquality(ship, planet, ship_targets, dock_attempts):
         - 50 * int(dist < 10)
         # bigger owned planets by other people are less attractive
         - 2*(0.5 - int(planet.is_owned() and planet.owner != ship.owner))*planet.radius)
-
-    #message2 = "The planetquality score for" + str(planet) + "is" + str(pqual)
-    #logging.info(message2)
-
     return pqual
+
+class NoShipAvailable(Exception):
+    pass
+
+cornershipID = None
+def cornershipfinder():
+    '''
+    :return: 8th ship that isn't docked (not the ID)
+    '''
+    global cornershipID
+    # if you don't do this then cornershipID creates a new local var with the same name
+    ships = game_map.get_me().all_ships()
+    if len(ships) <= SHIPTHRESHOLD and cornershipID is None:
+        raise NoShipAvailable()
+    if cornershipID is None:
+        for ship in ships:
+            if ship.docking_status != ship.DockingStatus.UNDOCKED:
+                continue
+            cornershipID = ship.id
+            return ship
+    else:
+        return game_map.get_me().get_ship(cornershipID)
+
+def cornershipmove():
+    cornership = cornershipfinder()
+
 
 while True:
     # turn start
@@ -41,17 +61,18 @@ while True:
 
     # define commands sent to halite engine
     command_queue = []
+
+    # move the cornership to the corner
+    cornershipmove()
+
     # for the ships in my possession
     for ship in game_map.get_me().all_ships():
         # Ship docked?
-        if ship.docking_status != ship.DockingStatus.UNDOCKED:
+        if ship.docking_status != ship.DockingStatus.UNDOCKED or ship.id == cornershipID:
             # Skip ship
             continue
 
         sortedplanets = sorted(game_map.all_planets(), key=lambda planet: planetquality(ship, planet, ship_targets, dock_attempts))
-        #messagesort = "The order of planets for" + str(ship) + "is" + str(sortedplanets)
-        #logging.info(messagesort)
-
         # For the planets in the game
         for planet in sortedplanets:
             # Planet owned?
