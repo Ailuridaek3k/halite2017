@@ -79,7 +79,10 @@ while True:
     command_queue = []
 
     # move the cornership to the corner
-    cornershipmove()
+    try:
+        cornershipmove()
+    except NoShipAvailable:
+        pass
 
     # for the ships in my possession
     for ship in game_map.get_me().all_ships():
