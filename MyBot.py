@@ -20,7 +20,6 @@ def planetquality(ship, planet, ship_targets, dock_attempts):
     pqual = (
         -50*int(planet.is_owned() and planet.owner == ship.owner and not planet.is_full())
         + 2000*int(planet.is_full() and planet.owner == ship.owner)
-        # + 1000 * int(planet in dock_attempts)
         + 100*int(planet.is_owned() and planet.owner != ship.owner)
         + 200 * count_in_targets
         + dist
@@ -79,7 +78,7 @@ while True:
                     ship.closest_point_to(target_object),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
-                    ignore_ships=False, angular_step=8)#Stewart fixed ur code dumbo
+                    ignore_ships=False, angular_step=8)
                 # movement
                 if navigate_command:
                     command_queue.append(navigate_command)
