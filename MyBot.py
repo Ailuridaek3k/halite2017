@@ -52,7 +52,7 @@ def cornershipfinder():
 
 def cornershipmove():
     cornership = cornershipfinder()
-    shippos = np.array([cornership.x, cornership.y])
+    shippos = np.array([[cornership.x, cornership.y]])
     corners = np.array([[0, 0],
                        [game_map.width, game_map.height],
                        [0, game_map.height],
