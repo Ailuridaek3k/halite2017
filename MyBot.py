@@ -5,6 +5,7 @@ import math
 import random
 import numpy as np
 import scipy.spatial.distance
+from hlt.entity import Position
 
 # communication with game engine
 game = hlt.Game("Csinensis")
@@ -59,9 +60,9 @@ def cornershipmove():
                        [game_map.width, 0]])
     distances = scipy.spatial.distance.cdist(shippos, corners)
     index, distance = min(enumerate(distances), key=lambda distance: distance[1])
-    desiredcorner = corners[index]
+    desiredcornerX, desiredcornerY = corners[index]
     navigate_command = ship.navigate(
-        ship.closest_point_to(desiredcorner),
+        ship.closest_point_to(Position(desiredcornerX, desiredcornerY)),
         game_map,
         speed=int(hlt.constants.MAX_SPEED),
         ignore_ships=False, angular_step=8)
