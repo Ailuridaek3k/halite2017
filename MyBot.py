@@ -66,8 +66,9 @@ def cornershipmove():
                        [0, game_map.height],
                        [game_map.width, 0]])
     distances = scipy.spatial.distance.cdist(shippos, corners)
-    index, distance = min(enumerate(distances), key=lambda distance: distance[1])
+    index, distance = min(enumerate(distances[0]), key=lambda distance: distance[1])
     desiredcornerX, desiredcornerY = corners[index]
+    logging.info("X %s Y %s distances %s index %s distance %s", str(desiredcornerX), str(desiredcornerY), str(distances), str(index), str(distance))
     navigate_command = ship.navigate(
         ship.closest_point_to(Position(desiredcornerX, desiredcornerY)),
         game_map,

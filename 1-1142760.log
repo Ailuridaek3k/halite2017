@@ -1,0 +1,58 @@
+[
+ {
+  "Error": {},
+  "Frames": [
+   {
+    "Time": 1597,
+    "Turn": 0
+   },
+   {
+    "Commands": [
+     {
+      "angle": 75,
+      "magnitude": 7,
+      "owner": 0,
+      "queue_number": 0,
+      "shipId": 2,
+      "type": "thrust"
+     }
+    ],
+    "Planets": null,
+    "Ships": [
+     {
+      "cooldown": 0,
+      "docking": {
+       "status": "undocked"
+      },
+      "health": 255,
+      "id": 2,
+      "owner": 0,
+      "vel_x": 0.0,
+      "vel_y": 0.0,
+      "x": 169.811733315718,
+      "y": 65.7614807840235
+     }
+    ],
+    "Time": 1,
+    "Turn": 1
+   }
+  ],
+  "PlayerID": 0,
+  "PlayerName": "Csinensis"
+ },
+ {
+  "Error": {
+   "Message": "ERRORED! Response received (if any): ",
+   "Turn": 1
+  },
+  "Frames": [
+   {
+    "Time": 74,
+    "Turn": 0
+   },
+   null
+  ],
+  "PlayerID": 1,
+  "PlayerName": "python: can't open file 'MyBot"
+ }
+]
