@@ -48,8 +48,14 @@ def cornershipfinder():
                 continue
             cornershipID = ship.id
             return ship
+        # make sure if all ships are docked we don't exist the loop
+        raise NoShipAvailable()
     else:
-        return game_map.get_me().get_ship(cornershipID)
+        if game_map.get_me().get_ship(cornershipID) is not None:
+            return game_map.get_me().get_ship(cornershipID)
+        else:
+            cornershipID = None
+            return cornershipfinder()
 
 
 def cornershipmove():
