@@ -68,7 +68,6 @@ def cornershipmove():
     distances = scipy.spatial.distance.cdist(shippos, corners)
     index, distance = min(enumerate(distances[0]), key=lambda distance: distance[1])
     desiredcornerX, desiredcornerY = corners[index]
-    logging.info("X %s Y %s distances %s index %s distance %s", str(desiredcornerX), str(desiredcornerY), str(distances), str(index), str(distance))
     navigate_command = ship.navigate(
         ship.closest_point_to(Position(desiredcornerX, desiredcornerY)),
         game_map,
@@ -93,8 +92,12 @@ while True:
     except NoShipAvailable:
         pass
 
+    shiplist = game_map.get_me().all_ships()
+    if len(shiplist) >= 400:
+        shiplist = shiplist[:-400]
+
     # for the ships in my possession
-    for ship in game_map.get_me().all_ships():
+    for ship in shiplist:
         # Ship docked?
         if ship.docking_status != ship.DockingStatus.UNDOCKED or ship.id == cornershipID:
             # Skip ship

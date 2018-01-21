@@ -1,0 +1,58 @@
+[
+ {
+  "Error": {},
+  "Frames": [
+   {
+    "Time": 2121,
+    "Turn": 0
+   },
+   {
+    "Commands": [
+     {
+      "angle": 95,
+      "magnitude": 7,
+      "owner": 0,
+      "queue_number": 0,
+      "shipId": 2,
+      "type": "thrust"
+     }
+    ],
+    "Planets": null,
+    "Ships": [
+     {
+      "cooldown": 0,
+      "docking": {
+       "status": "undocked"
+      },
+      "health": 255,
+      "id": 2,
+      "owner": 0,
+      "vel_x": -2.44249065417534e-15,
+      "vel_y": 0.0,
+      "x": 83.3899098007664,
+      "y": 121.973362886642
+     }
+    ],
+    "Time": 1,
+    "Turn": 1
+   }
+  ],
+  "PlayerID": 0,
+  "PlayerName": "Csinensis"
+ },
+ {
+  "Error": {
+   "Message": "ERRORED! Response received (if any): ",
+   "Turn": 1
+  },
+  "Frames": [
+   {
+    "Time": 0,
+    "Turn": 0
+   },
+   null
+  ],
+  "PlayerID": 1,
+  "PlayerName": "python: can't open file 'Defau"
+ }
+]
