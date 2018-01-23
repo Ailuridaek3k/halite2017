@@ -51,7 +51,7 @@ class Game:
         :return: nothing
         """
         for command in command_queue:
-            Game._send_string(command)
+            Game._send_string(str(command))
 
         Game._done_sending()
 
