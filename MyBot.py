@@ -76,8 +76,10 @@ def cornershipmove():
     if navigate_command:
         command_queue.append(navigate_command)
 
+turn_number = 0
 while True:
     # turn start
+    turn_number += 1
     game_map = game.update_map()
 
     dock_attempts = {}
@@ -92,9 +94,14 @@ while True:
     except NoShipAvailable:
         pass
 
+    # for avoiding timeouts due to too many active ships
     shiplist = game_map.get_me().all_ships()
     if len(shiplist) >= 400:
         shiplist = shiplist[:-400]
+
+    # avoid crashing into each other at the start of the game
+    if turn_number == 1:
+        shiplist = list(sorted(shiplist, key=lambda s: (s.y, s.x)))
 
     # for the ships in my possession
     for ship in shiplist:
