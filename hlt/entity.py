@@ -1,12 +1,13 @@
 import logging
 import abc
 import math
-import random
 from enum import Enum
 from . import constants
+import numpy as np
+import copy
 
 
-class Entity:
+class Entity(object):
     """
     Then entity abstract base-class represents all game entities possible. As a base all entities possess
     a position, radius, health, an owner and an id. Note that ease of interoperability, Position inherits from
@@ -21,13 +22,24 @@ class Entity:
     """
     __metaclass__ = abc.ABCMeta
 
-    def _init__(self, x, y, radius, health, player, entity_id):
+    COORDS_MASK = np.array([1, 1, 0, 0])
+
+    def __init__(self, x, y, radius, health, player, entity_id):
         self.x = x
         self.y = y
         self.radius = radius
         self.health = health
         self.owner = player
         self.id = entity_id
+
+        self.array = np.array([x, y, radius, player])
+
+    def calculate_relative_distance(self, other, coords_mask=COORDS_MASK):
+        other_pos = (other.array * coords_mask)
+        self_pos = self.array * coords_mask
+
+        offset = self_pos - other_pos
+        return np.linalg.norm(offset)
 
     def calculate_distance_between(self, target):
         """
@@ -71,7 +83,7 @@ class Entity:
         pass
 
     def __str__(self):
-        return "Entity {} (id: {}) at position: (x = {}, y = {}), with radius = {}"\
+        return "Entity {} (id: {}) at position: (x = {}, y = {}), with radius = {}" \
             .format(self.__class__.__name__, self.id, self.x, self.y, self.radius)
 
     def __repr__(self):
@@ -96,15 +108,16 @@ class Planet(Entity):
 
     def __init__(self, planet_id, x, y, hp, radius, docking_spots, current,
                  remaining, owned, owner, docked_ships):
-        self.id = planet_id
-        self.x = x
-        self.y = y
-        self.radius = radius
+        super().__init__(x, y, radius, hp, owner if bool(int(owned)) else -1, planet_id)
+        # self.id = planet_id
+        # self.x = x
+        # self.y = y
+        # self.radius = radius
         self.num_docking_spots = docking_spots
         self.current_production = current
         self.remaining_resources = remaining
-        self.health = hp
-        self.owner = owner if bool(int(owned)) else None
+        # self.health = hp
+        # self.owner = owner if bool(int(owned)) else None
         self._docked_ship_ids = docked_ships
         self._docked_ships = {}
 
@@ -133,7 +146,7 @@ class Planet(Entity):
         :return: True if owned, False otherwise
         :rtype: bool
         """
-        return self.owner is not None
+        return self.owner is not None and self.owner is not -1
 
     def is_full(self):
         """
@@ -152,7 +165,7 @@ class Planet(Entity):
         :param dict[int, gane_map.Player] players: A dictionary of player objects keyed by id
         :return: nothing
         """
-        if self.owner is not None:
+        if self.is_owned():
             self.owner = players.get(self.owner)
             for ship in self._docked_ship_ids:
                 self._docked_ships[ship] = self.owner.get_ship(ship)
@@ -204,10 +217,33 @@ class Planet(Entity):
         return planets, remainder
 
 
+class Command:
+    command_name = ""
+
+    def __init__(self, *params):
+        self.params = list(map(str, params))
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        params = " ".join(self.params)
+        return "{} {}".format(self.command_name, params)
+
+
+class Thrust(Command):
+    command_name = "t"
+
+    def with_id(self, newid):
+        new = copy.deepcopy(self)
+        new.params[0] = str(newid)
+        return new
+
+
 class Ship(Entity):
     """
     A ship in the game.
-    
+
     :ivar id: The ship ID.
     :ivar x: The ship x-coordinate.
     :ivar y: The ship y-coordinate.
@@ -226,12 +262,13 @@ class Ship(Entity):
 
     def __init__(self, player_id, ship_id, x, y, hp, vel_x, vel_y,
                  docking_status, planet, progress, cooldown):
-        self.id = ship_id
-        self.x = x
-        self.y = y
-        self.owner = player_id
-        self.radius = constants.SHIP_RADIUS
-        self.health = hp
+        super().__init__(x, y, constants.SHIP_RADIUS, hp, player_id, ship_id)
+        # self.id = ship_id
+        # self.x = x
+        # self.y = y
+        # self.owner = player_id
+        # self.radius = constants.SHIP_RADIUS
+        # self.health = hp
         self.docking_status = docking_status
         self.planet = planet if (docking_status is not Ship.DockingStatus.UNDOCKED) else None
         self._docking_progress = progress
@@ -249,7 +286,7 @@ class Ship(Entity):
 
         # we want to round angle to nearest integer, but we want to round
         # magnitude down to prevent overshooting and unintended collisions
-        return "t {} {} {}".format(self.id, int(magnitude), round(angle))
+        return Thrust(self.id, int(magnitude), round(angle))
 
     def dock(self, planet):
         """
@@ -270,8 +307,10 @@ class Ship(Entity):
         """
         return "u {}".format(self.id)
 
+    # TODO: Fix this to take account of existing velocity
+    # TODO: GPU accelerate this
     def navigate(self, target, game_map, speed, avoid_obstacles=True, max_corrections=90, angular_step=1,
-                 ignore_ships=False, ignore_planets=False, avoid=None):
+                 ignore_ships=False, ignore_planets=False, angle_dodges=None):
         """
         Move a ship to a specific target position (Entity). It is recommended to place the position
         itself here, else navigate will crash into the target. If avoid_obstacles is set to True (default)
@@ -300,14 +339,13 @@ class Ship(Entity):
             else Ship if (ignore_ships and not ignore_planets) \
             else Planet if (ignore_planets and not ignore_ships) \
             else Entity
+        # TODO have obstacle calculation ignore ships that are more than speed away
+        # BUT don't ignore planets
         if avoid_obstacles and game_map.obstacles_between(self, target, ignore):
-            dodgeRange = 0.1
-            avoidAngle = math.radians(angle + angular_step) + random.uniform(0,dodgeRange)
-            #adding a random number so that the ships don't come up with the same number and crash
-            avoidAngle = math.radians(angle + angular_step) + (
-                next(avoid) if avoid else 0)
-            new_target_dx = math.cos(avoidAngle) * distance
-            new_target_dy = math.sin(avoidAngle) * distance
+            dodge_angle = math.radians(angle + angular_step) + (
+                next(angle_dodges) if angle_dodges else 0)
+            new_target_dx = math.cos(dodge_angle) * distance
+            new_target_dy = math.sin(dodge_angle) * distance
             new_target = Position(self.x + new_target_dx, self.y + new_target_dy)
             return self.navigate(new_target, game_map, speed, True, max_corrections - 1, angular_step)
         speed = speed if (distance >= speed) else distance
