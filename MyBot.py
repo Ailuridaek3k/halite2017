@@ -5,6 +5,7 @@ import math
 import random
 import numpy as np
 import scipy.spatial.distance
+import collections
 from hlt.entity import Position
 
 # communication with game engine
@@ -12,6 +13,7 @@ game = hlt.Game("Csinensis")
 # start message
 logging.info("Joining the game")
 
+PARALLELTHRESHOLD = 3
 SHIPTHRESHOLD = 8
 
 # calculates how dangerous the planet is
@@ -85,6 +87,8 @@ while True:
     dock_attempts = {}
     ship_targets = {}
 
+    target_moves = collections.defaultdict(list)
+
     # define commands sent to halite engine
     command_queue = []
 
@@ -132,15 +136,20 @@ while True:
                     # attack the docked ships
                     target_object = planet.all_docked_ships()[0]
 
-                ship_targets[ship] = target_object
+            ship_targets[ship] = target_object
+            if target_object in target_moves and len(shiplist) <= PARALLELTHRESHOLD:
+                navigate_command = target_moves[target_object][0].with_id(ship.id)
+            elif target_object:
                 navigate_command = ship.navigate(
                     ship.closest_point_to(target_object),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
                     ignore_ships=False, angular_step=8)
-                # movement
                 if navigate_command:
-                    command_queue.append(navigate_command)
+                    target_moves[target_object].append(navigate_command)
+                # movement
+            if navigate_command:
+                command_queue.append(navigate_command)
             break
 
     # Send our set of commands to the Halite engine for this turn
